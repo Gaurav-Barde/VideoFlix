@@ -19,7 +19,7 @@ const VideoContainer = () => {
   if (!videos.length) return <Shimmer />;
 
   return (
-    <div className="flex flex-wrap ml-4 box-border overflow-x-hidden">
+    <div className="flex flex-wrap mr-4 box-border overflow-x-hidden">
       {videos.map((item) => (
         <VideoCard data={item} />
       ))}

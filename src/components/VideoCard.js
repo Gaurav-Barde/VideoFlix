@@ -3,9 +3,8 @@ import React from "react";
 const VideoCard = ({ data }) => {
   const { snippet, statistics } = data;
   const { title, channelTitle, thumbnails } = snippet;
-  console.log("data:", data);
   return (
-    <div className="m-4 cursor-pointer">
+    <div className="m-4 ml-0 cursor-pointer">
       <img
         alt="Thumbnail"
         src={thumbnails.medium.url}

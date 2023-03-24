@@ -1,9 +1,14 @@
 import React from "react";
 import { sidebarItems } from "../utils/constants";
+import { useSelector } from "react-redux";
 
 const Sidebar = () => {
+  const isMenuOpen = useSelector((store) => store.menu.isMenuOpen);
+
+  if (!isMenuOpen) return null;
+
   return (
-    <aside>
+    <aside className="mr-6">
       <ul>
         {sidebarItems.map((item) => (
           <li key={item.id} className="py-2 mb-4 flex items-center">
