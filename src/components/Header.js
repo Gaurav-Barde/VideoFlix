@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/redux/menuSlice";
 import { YOUTUBE_SEARCH_SUGGESTION_API } from "../utils/constants";
 import { RxMagnifyingGlass, RxCross1 } from "react-icons/rx";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,7 +38,9 @@ const Header = () => {
         <button onClick={toggleMenuHandler}>
           <img alt="menu" src={MenuIcon} className="h-6 mr-4 cursor-pointer" />
         </button>
-        <img alt="logo" src={Logo} className="h-5 mx-2 cursor-pointer" />
+        <Link to="/">
+          <img alt="logo" src={Logo} className="h-5 mx-2 cursor-pointer" />
+        </Link>
       </div>
       <div className="col-span-6 flex justify-center relative">
         <div className="relative  w-1/2">
