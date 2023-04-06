@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Logo from "../assets/img/logo.png";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/redux/menuSlice";
+import { cacheSuggestions } from "../utils/redux/suggestionsCacheSlice";
 import { YOUTUBE_SEARCH_SUGGESTION_API } from "../utils/constants";
 import {
   RxMagnifyingGlass,
@@ -9,21 +10,40 @@ import {
   RxHamburgerMenu,
   RxAvatar,
 } from "react-icons/rx";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const suggestionCache = useSelector((store) => store.suggestionsCache);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getSearchSuggestions();
+    window.addEventListener("click", hideSuggestions);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => getSearchSuggestions(), 300);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [searchTerm]);
 
+  const hideSuggestions = (e) =>
+    e.target.nodeName !== "UL" && setShowSuggestions(false);
+
   const getSearchSuggestions = async () => {
-    const data = await fetch(YOUTUBE_SEARCH_SUGGESTION_API + searchTerm);
-    const json = await data.json();
-    setSearchSuggestions(json[1]);
+    if (suggestionCache[searchTerm]) {
+      setSearchSuggestions(suggestionCache[searchTerm]);
+    } else {
+      const data = await fetch(YOUTUBE_SEARCH_SUGGESTION_API + searchTerm);
+      const json = await data.json();
+      setSearchSuggestions(json[1]);
+      dispatch(cacheSuggestions({ [searchTerm]: json[1] }));
+    }
   };
 
   const toggleMenuHandler = () => {
@@ -32,6 +52,20 @@ const Header = () => {
 
   const clearSearchTermHandler = () => {
     setSearchTerm("");
+  };
+
+  const suggestionClickHandler = (suggestion) => {
+    setSearchTerm(suggestion);
+    setShowSuggestions(false);
+  };
+
+  const searchButtonHandler = () => {
+    navigate("results/" + searchTerm);
+  };
+
+  const searchOnchangeHandler = (e) => {
+    setSearchTerm(e.target.value);
+    setShowSuggestions(true);
   };
 
   return (
@@ -50,7 +84,7 @@ const Header = () => {
             type="text"
             placeholder="Search"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={searchOnchangeHandler}
             className="border border-slate-150 w-full p-2 rounded-l-md"
           />
           {searchTerm && (
@@ -62,20 +96,28 @@ const Header = () => {
             </button>
           )}
         </div>
-        <button className="bg-slate-200 rounded-r-md p-2">
-          <RxMagnifyingGlass className="text-2xl" />
-        </button>
         {/* Suggestions Modal */}
-        {searchTerm && (
-          <ul className="absolute top-full w-[calc(50%+2.75rem)] -translate-x-[calc(50%)] left-1/2 bg-slate-50 rounded-md p-3 py-4 transition">
+        {showSuggestions && searchTerm && (
+          <ul className="absolute top-full w-[calc(50%+2.75rem)] left-1/2 -translate-x-[calc(50%)] bg-slate-50 rounded-md p-3 py-4 transition shadow-md">
             {searchSuggestions.map((suggestion, index) => (
-              <li key={index} className="py-2 flex items-center">
-                <RxMagnifyingGlass className="text-xl mr-2" />
-                <span className="text-lg">{suggestion}</span>
-              </li>
+              <Link key={index} to={"results/" + suggestion}>
+                <li
+                  onClick={() => suggestionClickHandler(suggestion)}
+                  className="py-2 flex items-center cursor-pointer"
+                >
+                  <RxMagnifyingGlass className="text-xl mr-2" />
+                  <span className="text-lg">{suggestion}</span>
+                </li>
+              </Link>
             ))}
           </ul>
         )}
+        <button
+          className="bg-slate-200 rounded-r-md p-2"
+          onClick={searchButtonHandler}
+        >
+          <RxMagnifyingGlass className="text-2xl" />
+        </button>
       </div>
       <div className="col-span-3 flex justify-end">
         <button className="flex items-center border border-gray-150 p-2 rounded-md">

@@ -7,7 +7,7 @@ import { closeMenu } from "../utils/redux/menuSlice";
 
 const WatchPage = () => {
   const [videoDetails, setVideoDetails] = useState([]);
-  const [windowWidth, setWindowWidth] = useState(600);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const { videoId } = useParams();
 
   const dispatch = useDispatch();
@@ -15,7 +15,6 @@ const WatchPage = () => {
   useEffect(() => {
     getVideoDetails(videoId);
     dispatch(closeMenu());
-
     window.addEventListener("resize", adjustWindowWidth);
   }, []);
 
@@ -36,8 +35,7 @@ const WatchPage = () => {
         height={windowWidth / 3}
         src={"https://www.youtube.com/embed/" + videoId}
         title="YouTube video player"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;"
         allowFullScreen
       ></iframe>
       <div className="p-2">
