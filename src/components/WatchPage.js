@@ -2,18 +2,24 @@ import React, { useEffect, useState } from "react";
 import { RxModulzLogo } from "react-icons/rx";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
-import { YOUTUBE_VIDEO_BY_ID_API } from "../utils/constants";
+import {
+  YOUTUBE_VIDEO_BY_ID_API,
+  YOUTUBE_COMMENTS_API,
+} from "../utils/constants";
 import { closeMenu } from "../utils/redux/menuSlice";
+import Comments from "./Comments";
 
 const WatchPage = () => {
   const [videoDetails, setVideoDetails] = useState([]);
+  const [comments, setcomments] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const { videoId } = useParams();
 
+  const { videoId } = useParams();
   const dispatch = useDispatch();
 
   useEffect(() => {
     getVideoDetails(videoId);
+    getCommentsData();
     dispatch(closeMenu());
     window.addEventListener("resize", adjustWindowWidth);
   }, []);
@@ -22,6 +28,12 @@ const WatchPage = () => {
     const data = await fetch(YOUTUBE_VIDEO_BY_ID_API + videoId);
     const json = await data.json();
     setVideoDetails(json.items[0]);
+  };
+
+  const getCommentsData = async () => {
+    const data = await fetch(YOUTUBE_COMMENTS_API + videoId);
+    const json = await data.json();
+    setcomments(json.items);
   };
 
   const adjustWindowWidth = () => {
@@ -50,7 +62,7 @@ const WatchPage = () => {
             {videoDetails?.snippet?.channelTitle}
           </h3>
         </div>
-        <div className="font-semibold text-sm mt-2 bg-slate-100 text-gray-800 p-1 px-4 inline-block rounded-sm">
+        <div className="font-semibold text-sm mt-2 bg-slate-200 text-gray-800 p-4 px-4 inline-block rounded-sm">
           <span>
             {Math.floor(videoDetails?.statistics?.viewCount / 1000)}K views
           </span>
@@ -65,6 +77,20 @@ const WatchPage = () => {
           </span>
         </div>
       </div>
+      {comments.length && (
+        <div className="mt-4 p-2">
+          <h1 className="font-semibold mb-4">{comments.length} Comments</h1>
+          {comments.map((comment) => (
+            <div className="mb-8">
+              <Comments
+                key={comment.id}
+                data={comment}
+                snippet={comment.snippet.topLevelComment.snippet}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
