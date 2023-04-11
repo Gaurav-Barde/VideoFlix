@@ -8,10 +8,13 @@ import {
 } from "../utils/constants";
 import { closeMenu } from "../utils/redux/menuSlice";
 import Comments from "./Comments";
+import LiveChat from "./LiveChat";
+import { formatString } from "../utils/helper";
 
 const WatchPage = () => {
   const [videoDetails, setVideoDetails] = useState([]);
   const [comments, setcomments] = useState([]);
+  const [liveChatActive, setLiveChatActive] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const { videoId } = useParams();
@@ -41,15 +44,34 @@ const WatchPage = () => {
   };
 
   return (
-    <div className="p-2">
-      <iframe
-        width={windowWidth / 1.2}
-        height={windowWidth / 3}
-        src={"https://www.youtube.com/embed/" + videoId}
-        title="YouTube video player"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;"
-        allowFullScreen
-      ></iframe>
+    <div className="p-2 w-full">
+      <div className="flex items-center justify-between w-full">
+        <iframe
+          width={liveChatActive ? windowWidth / 1.25 : windowWidth / 1.2}
+          height={windowWidth / 3}
+          src={"https://www.youtube.com/embed/" + videoId}
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;"
+          allowFullScreen
+        ></iframe>
+        {windowWidth > 800 && (
+          <div>
+            {!liveChatActive ? (
+              <button
+                onClick={() => setLiveChatActive(true)}
+                className={`border-2 border-gray-400 px-2 py-1 rounded-md text-sm font-bold ml-1 text-red-500`}
+              >
+                Go Live
+              </button>
+            ) : (
+              <LiveChat
+                height={windowWidth / 3}
+                setLiveChatActive={setLiveChatActive}
+              />
+            )}
+          </div>
+        )}
+      </div>
       <div className="p-2">
         <h2 className="max-w-[600px] text-lg font-semibold">
           {videoDetails?.snippet?.title}
@@ -67,13 +89,8 @@ const WatchPage = () => {
             {Math.floor(videoDetails?.statistics?.viewCount / 1000)}K views
           </span>
           <span className="ml-2">
-            Published at:
-            {" " +
-              videoDetails?.snippet?.publishedAt
-                .slice(0, 10)
-                .split("-")
-                .reverse()
-                .join("-")}
+            {"Published at: " +
+              formatString(videoDetails?.snippet?.publishedAt)}
           </span>
         </div>
       </div>
@@ -81,9 +98,8 @@ const WatchPage = () => {
         <div className="mt-4 p-2">
           <h1 className="font-semibold mb-4">{comments.length} Comments</h1>
           {comments.map((comment) => (
-            <div className="mb-8">
+            <div key={comment.id} className="mb-8">
               <Comments
-                key={comment.id}
                 data={comment}
                 snippet={comment.snippet.topLevelComment.snippet}
               />
